@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EpisodeHub — spoilervrij praten over TV</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f1f2e;
+    --paper: #f0f5fa;
+    --warm: #e4eef7;
+    --accent: #1a7fd4;
+    --accent2: #38bdf8;
+    --muted: #6b8499;
+    --card: #ffffff;
+    --border: #ccdded;
+    --green: #22c27a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; }
+
+  /* HEADER */
+  header {
+    background: var(--ink);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--paper); letter-spacing: -0.5px; }
+  .logo span { color: var(--accent2); }
+  .header-right { display: flex; gap: 0.75rem; align-items: center; }
+  .btn-login { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 0.35rem 1rem; color: rgba(255,255,255,0.9); font-size: 0.82rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s; }
+  .btn-login:hover { background: rgba(255,255,255,0.18); }
+  .btn-login-apple { background: white; color: var(--ink); border: none; border-radius: 8px; padding: 0.35rem 1rem; font-size: 0.82rem; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; transition: opacity 0.15s; }
+  .btn-login-apple:hover { opacity: 0.88; }
+  .user-pill { display: flex; align-items: center; gap: 0.6rem; background: rgba(255,255,255,0.1); border-radius: 30px; padding: 0.3rem 0.85rem 0.3rem 0.4rem; cursor: pointer; transition: background 0.15s; }
+  .user-pill:hover { background: rgba(255,255,255,0.17); }
+  .user-pill-avatar { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: white; flex-shrink: 0; }
+  .user-pill-name { font-size: 0.8rem; color: rgba(255,255,255,0.9); font-weight: 500; }
+  .user-pill-karma { font-size: 0.72rem; color: var(--accent2); margin-left: 0.1rem; }
+
+  /* STRIKE DISPLAY */
+  .strike-display {
+    display: flex; align-items: center; gap: 0.5rem;
+    background: rgba(255,255,255,0.07); border-radius: 20px;
+    padding: 0.3rem 0.9rem; cursor: pointer; transition: background 0.15s;
+  }
+  .strike-display:hover { background: rgba(255,255,255,0.12); }
+  .strike-dots { display: flex; gap: 4px; }
+  .strike-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.3); transition: all 0.3s;
+  }
+  .strike-dot.filled { border-color: var(--accent); background: var(--accent); }
+  .strike-dot.filled.s2 { border-color: #e07030; background: #e07030; }
+  .strike-dot.filled.s3 { border-color: var(--accent); background: var(--accent); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.35); } }
+  .strike-label { font-size: 0.75rem; color: rgba(255,255,255,0.6); }
+
+  .tag-beta { background: var(--accent); color: white; font-size: 0.65rem; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 20px; }
+
+  /* DONATION BANNER - removed */
+
+  /* SHOW BAR */
+  .show-bar { background: var(--warm); border-bottom: 1px solid var(--border); padding: 0.9rem 2rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+  .show-chip { background: white; border: 1.5px solid var(--border); border-radius: 30px; padding: 0.4rem 1rem; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; white-space: nowrap; color: var(--muted); }
+  .show-chip.active, .show-chip:hover { background: var(--ink); border-color: var(--ink); color: white; }
+  .show-chip.active { color: var(--accent2); }
+  .add-show-btn { background: transparent; border: 1.5px dashed var(--muted); border-radius: 30px; padding: 0.4rem 1rem; font-size: 0.85rem; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .add-show-btn:hover { border-color: var(--ink); color: var(--ink); }
+
+  /* LAYOUT */
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem; display: grid; grid-template-columns: 260px 1fr; gap: 2rem; }
+
+  /* SIDEBAR */
+  .sidebar { position: sticky; top: 100px; height: fit-content; }
+  .sidebar-title { font-size: 0.7rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.75rem; }
+  .season-label { font-size: 0.75rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; padding-left: 0.5rem; }
+  .ep-list { list-style: none; }
+  .ep-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.75rem; border-radius: 8px; cursor: pointer; transition: background 0.12s; margin-bottom: 2px; }
+  .ep-item:hover { background: var(--warm); }
+  .ep-item.active { background: var(--ink); color: white; }
+  .ep-badge { font-size: 0.7rem; font-weight: 500; background: var(--warm); border-radius: 4px; padding: 1px 5px; color: var(--muted); flex-shrink: 0; }
+  .ep-item.active .ep-badge { background: rgba(255,255,255,0.15); color: var(--accent2); }
+  .ep-name { font-size: 0.85rem; }
+  .ep-lock { margin-left: auto; font-size: 0.75rem; opacity: 0.4; }
+
+  /* RULES BOX */
+  .rules-box { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1rem; margin-top: 1.5rem; }
+  .rules-box h4 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 0.75rem; font-weight: 600; }
+  .rule { display: flex; gap: 0.5rem; font-size: 0.8rem; line-height: 1.5; margin-bottom: 0.5rem; color: #3a3028; }
+  .rule-icon { flex-shrink: 0; }
+
+  /* EPISODE HERO */
+  .episode-hero { background: var(--ink); border-radius: 16px; padding: 2rem; margin-bottom: 1.5rem; position: relative; overflow: hidden; }
+  .episode-hero::before { content:''; position:absolute; top:-40px; right:-40px; width:200px; height:200px; background:radial-gradient(circle, rgba(200,70,43,0.3), transparent 70%); border-radius:50%; }
+  .ep-tag { display: inline-block; background: var(--accent); color: white; font-size: 0.7rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 10px; border-radius: 4px; margin-bottom: 0.75rem; }
+  .ep-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: white; line-height: 1.2; margin-bottom: 0.5rem; }
+  .ep-meta { color: rgba(255,255,255,0.5); font-size: 0.85rem; display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .spoiler-warning { margin-top: 1rem; background: rgba(232,160,69,0.15); border: 1px solid rgba(232,160,69,0.3); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.8rem; color: var(--accent2); }
+
+  /* TABS */
+  .tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; }
+  .tab { padding: 0.75rem 1.25rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; color: var(--muted); transition: all 0.15s; }
+  .tab:hover { color: var(--ink); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* MEDIA */
+  .media-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+  .media-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; display: flex; gap: 0.75rem; align-items: flex-start; text-decoration: none; color: inherit; transition: all 0.15s; }
+  .media-card:hover { border-color: var(--accent); box-shadow: 0 2px 12px rgba(200,70,43,0.1); }
+  .media-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+  .icon-podcast { background: #f3e8ff; } .icon-article { background: #e8f0fe; } .icon-video { background: #fce8e8; } .icon-twitter { background: #e8f5ff; }
+  .media-type { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 600; }
+  .media-title { font-size: 0.85rem; font-weight: 500; line-height: 1.3; margin-top: 2px; }
+  .media-source { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+  /* AI RECAP */
+  .ai-recap { background: linear-gradient(135deg, #1a1210 0%, #2d1f1a 100%); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; border: 1px solid rgba(232,160,69,0.2); }
+  .ai-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent2); font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+  .ai-label::before { content: '✦'; }
+  .ai-text { font-size: 0.875rem; color: rgba(255,255,255,0.8); line-height: 1.7; }
+
+  /* FILTER */
+  .filter-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+  .filter-label { font-size: 0.8rem; color: var(--muted); }
+  .filter-chip { border: 1px solid var(--border); border-radius: 20px; padding: 0.25rem 0.75rem; font-size: 0.78rem; cursor: pointer; transition: all 0.12s; background: white; color: var(--muted); }
+  .filter-chip:hover, .filter-chip.active { background: var(--ink); color: white; border-color: var(--ink); }
+
+  /* AI FEEDBACK */
+  .ai-feedback { border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1rem; font-size: 0.875rem; line-height: 1.6; display: none; animation: fadeUp 0.3s ease; }
+  .ai-feedback.visible { display: block; }
+  .ai-feedback.warn { background: #fff8e8; border: 1.5px solid #f0c060; color: #7a5010; }
+  .ai-feedback.block { background: #fef0ee; border: 1.5px solid #e07060; color: #8a2010; }
+  .ai-feedback.ok { background: #eefaf4; border: 1.5px solid #80d4a8; color: #1a5c3a; }
+  .ai-feedback-header { font-weight: 600; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; flex-wrap: wrap; }
+  .strike-earned { background: var(--accent); color: white; font-size: 0.7rem; font-weight: 600; border-radius: 4px; padding: 1px 8px; }
+  /* BANNED SCREEN */
+  .post-input-area { background: white; border: 1.5px solid var(--border); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; transition: border-color 0.15s; }
+  .post-input-area:focus-within { border-color: var(--accent); }
+  .post-input-area textarea { width: 100%; border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; resize: none; background: transparent; color: var(--ink); line-height: 1.6; min-height: 80px; }
+  .feedback-actions { display: flex; gap: 0.6rem; margin-top: 0.75rem; flex-wrap: wrap; }
+  .feedback-btn { border: none; border-radius: 6px; padding: 0.4rem 1rem; cursor: pointer; font-size: 0.82rem; font-family: 'DM Sans', sans-serif; transition: opacity 0.15s; }
+  .feedback-btn:hover { opacity: 0.85; }
+  .fb-post { background: #e07030; color: white; }
+  .fb-rewrite { background: var(--green); color: white; }
+  .fb-cancel { background: var(--warm); color: var(--ink); }
+  .post-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); gap: 1rem; }
+  .post-footer-left { display: flex; flex-direction: column; gap: 0.2rem; }
+  .post-footer small { color: var(--muted); font-size: 0.72rem; }
+  .ai-checking-indicator { display: none; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--muted); }
+  .ai-checking-indicator.visible { display: flex; }
+  .spinner { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn-post { background: var(--accent); color: white; border: none; border-radius: 8px; padding: 0.5rem 1.25rem; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s; white-space: nowrap; flex-shrink: 0; }
+  .btn-post:hover { background: #a83823; }
+  .btn-post:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+  /* COMMENTS */
+  .comment { display: flex; gap: 0.75rem; margin-bottom: 1.25rem; animation: fadeUp 0.3s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; color: white; }
+  .comment-body { flex: 1; background: white; border: 1px solid var(--border); border-radius: 0 12px 12px 12px; padding: 0.875rem 1rem; }
+  .comment-header { display: flex; justify-content: space-between; margin-bottom: 0.4rem; flex-wrap: wrap; gap: 0.25rem; }
+  .comment-user { font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; }
+  .karma-badge { font-size: 0.65rem; color: var(--accent); font-weight: 500; background: #e8f4ff; border-radius: 10px; padding: 1px 6px; }
+  .comment-time { font-size: 0.75rem; color: var(--muted); }
+  .comment-text { font-size: 0.875rem; line-height: 1.6; color: #2a2420; }
+  .comment-actions { display: flex; gap: 1rem; margin-top: 0.6rem; }
+  .comment-action { font-size: 0.75rem; color: var(--muted); cursor: pointer; display: flex; align-items: center; gap: 0.3rem; transition: color 0.12s; }
+  .comment-action:hover { color: var(--accent); }
+  .comment-action.liked { color: var(--accent); }
+
+  /* BANNED SCREEN */
+  .banned-screen { display: none; text-align: center; padding: 3rem 1rem; }
+  .banned-screen.visible { display: block; }
+  .banned-screen .big { font-size: 3rem; margin-bottom: 1rem; }
+  .banned-screen h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 0.75rem; }
+  .banned-screen p { color: var(--muted); font-size: 0.875rem; line-height: 1.7; max-width: 380px; margin: 0 auto; }
+
+  /* EMPTY */
+  .empty-tab { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+  .empty-tab .big { font-size: 2rem; margin-bottom: 0.5rem; }
+  .empty-tab p { font-size: 0.875rem; line-height: 1.6; }
+
+  /* MODALS */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  .overlay.open { display: flex; }
+  .modal { background: white; border-radius: 16px; padding: 2rem; width: 90%; max-width: 480px; animation: modalIn 0.2s ease; }
+  @keyframes modalIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
+  .modal h2 { font-family: 'Playfair Display', serif; margin-bottom: 0.75rem; }
+  .modal p { font-size: 0.875rem; line-height: 1.7; color: #3a3028; margin-bottom: 0.75rem; }
+  .modal input, .modal select { width: 100%; padding: 0.75rem 1rem; border: 1.5px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; margin-bottom: 0.75rem; outline: none; transition: border-color 0.15s; }
+  .modal input:focus, .modal select:focus { border-color: var(--accent); }
+  .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.5rem; }
+  .btn-cancel { background: var(--warm); border: none; border-radius: 8px; padding: 0.6rem 1.25rem; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .btn-add { background: var(--ink); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.25rem; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; }
+  .strike-modal-dots { display: flex; gap: 0.75rem; margin: 1.25rem 0; justify-content: center; }
+  .strike-modal-dot { width: 28px; height: 28px; border-radius: 50%; border: 2.5px solid var(--border); transition: all 0.3s; }
+  .strike-modal-dot.filled { background: var(--accent); border-color: var(--accent); }
+
+  /* SHOW INFO */
+  .show-info-block { background: var(--warm); border: 1px solid var(--border); border-radius: 12px; padding: 1.125rem 1.25rem; margin-bottom: 1.25rem; }
+  .show-info-intro { font-size: 0.85rem; line-height: 1.7; color: var(--ink); margin-bottom: 1rem; }
+  .cast-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.6rem; }
+  .cast-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.75rem; }
+  .cast-name { font-weight: 700; font-size: 0.82rem; color: var(--ink); margin-bottom: 0.1rem; }
+  .cast-loc { font-size: 0.72rem; color: var(--accent); margin-bottom: 0.25rem; }
+  .cast-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+
+  /* X TWEETS */
+  .x-tweet { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 0.875rem 1rem; }
+  .x-tweet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
+  .x-handle { font-weight: 700; font-size: 0.82rem; color: var(--ink); }
+  .x-date { font-size: 0.72rem; color: var(--muted); }
+  .x-text { font-size: 0.85rem; line-height: 1.6; color: #2a3a4a; }
+
+  /* GC CARD */
+  .gc-card {
+    margin-top: 0.875rem;
+    background: #f0f7ff;
+    border: 1.5px solid #bcd9f5;
+    border-radius: 10px;
+    padding: 1rem 1.125rem;
+  }
+  .gc-card-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1a5a8a;
+    margin-bottom: 0.75rem;
+  }
+  .gc-examples { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.75rem; }
+  .gc-row { font-size: 0.82rem; line-height: 1.5; }
+  .gc-bad { color: #b03030; }
+  .gc-good { color: #1a7a4a; font-weight: 500; }
+  .gc-principle {
+    font-size: 0.78rem;
+    color: #3a5a7a;
+    line-height: 1.6;
+    border-top: 1px solid #cde0f5;
+    padding-top: 0.6rem;
+    margin-top: 0.25rem;
+    font-style: italic;
+  }
+  .mirror-question { font-style: normal; font-weight: 500; color: #1a4a6a; background: #e8f4ff; border-radius: 6px; padding: 0.5rem 0.75rem; border-left: 3px solid var(--accent); }
+  .gc-link { display: inline-block; margin-top: 0.6rem; font-size: 0.78rem; color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .gc-link:hover { text-decoration: underline; }
+
+  /* TEST PANEL */
+  .test-case { background: var(--warm); border-radius: 10px; padding: 0.875rem 1rem; border: 1px solid var(--border); }
+  .test-case.done { background: white; }
+  .test-case-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
+  .test-label { font-size: 0.85rem; font-weight: 600; }
+  .test-expect { font-size: 0.75rem; color: var(--muted); }
+  .test-text { font-size: 0.82rem; color: #4a3a30; font-style: italic; margin-bottom: 0.5rem; }
+  .test-result { padding: 0.5rem 0.75rem; background: #fafafa; border-radius: 6px; font-size: 0.8rem; line-height: 1.5; }
+  .test-rewrite { margin-top: 0.3rem; font-style: italic; color: var(--green); font-size: 0.78rem; }
+  .test-pending { font-size: 0.78rem; color: var(--muted); display: flex; align-items: center; gap: 0.4rem; }
+
+  /* LOGIN OVERLAY */
+  .login-overlay { position: fixed; inset: 0; background: rgba(10,20,35,0.85); z-index: 300; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+  .login-card { background: white; border-radius: 20px; padding: 2.5rem 2rem; width: 90%; max-width: 400px; text-align: center; animation: modalIn 0.25s ease; }
+  .login-logo { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--ink); margin-bottom: 0.25rem; }
+  .login-logo span { color: var(--accent); }
+  .login-tagline { font-size: 0.875rem; color: var(--muted); margin-bottom: 2rem; line-height: 1.5; }
+  .login-divider { display: flex; align-items: center; gap: 0.75rem; margin: 1.25rem 0; color: var(--muted); font-size: 0.78rem; }
+  .login-divider::before, .login-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+  .login-name-row { display: flex; gap: 0.5rem; }
+  .login-input { width: 100%; padding: 0.75rem 1rem; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.15s; text-align: left; }
+  .login-input:focus { border-color: var(--accent); }
+  .btn-social { width: 100%; padding: 0.8rem 1rem; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.6rem; border: none; transition: opacity 0.15s; margin-bottom: 0.75rem; }
+  .btn-social:hover { opacity: 0.88; }
+  .btn-apple-full { background: var(--ink); color: white; }
+  .btn-google-full { background: white; color: var(--ink); border: 1.5px solid var(--border); }
+  .btn-continue { background: var(--accent); color: white; width: 100%; padding: 0.8rem; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; margin-top: 0.5rem; transition: opacity 0.15s; }
+  .btn-continue:hover { opacity: 0.88; }
+  .login-note { font-size: 0.72rem; color: var(--muted); margin-top: 1.25rem; line-height: 1.6; }
+  .login-skip { font-size: 0.8rem; color: var(--muted); cursor: pointer; margin-top: 0.75rem; display: inline-block; text-decoration: underline; }
+  .login-skip:hover { color: var(--ink); }
+
+  /* TRENDING FEED */
+  .trending-section { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; margin-top: 1.5rem; }
+  .trending-header { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.4rem; }
+  .trending-item { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; border-radius: 8px; padding: 0.6rem 0.5rem; }
+  .trending-item:last-child { border-bottom: none; }
+  .trending-item:hover { background: var(--paper); }
+  .trending-rank { font-size: 1.1rem; font-weight: 800; color: var(--border); min-width: 24px; text-align: center; font-family: 'Playfair Display', serif; }
+  .trending-rank.hot { color: var(--accent); }
+  .trending-meta { flex: 1; }
+  .trending-show { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 0.15rem; }
+  .trending-ep { font-size: 0.875rem; font-weight: 600; color: var(--ink); line-height: 1.3; }
+  .trending-activity { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; display: flex; align-items: center; gap: 0.3rem; }
+  .trending-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); display: inline-block; }
+
+
+
+  /* MOMENT CLIPS */
+  .moments-section { margin-bottom: 1.5rem; }
+  .moments-header { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--muted); margin-bottom: 0.75rem; }
+  .moment-chips { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .moment-chip { background: var(--warm); border: 1px solid var(--border); border-radius: 20px; padding: 0.3rem 0.85rem; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; gap: 0.35rem; color: var(--ink); transition: all 0.12s; text-decoration: none; }
+  .moment-chip:hover { background: var(--ink); color: white; border-color: var(--ink); }
+  .moment-time { font-family: monospace; font-size: 0.7rem; color: var(--accent); font-weight: 600; }
+  .moment-chip:hover .moment-time { color: var(--accent2); }
+
+  /* SHOW TYPE BADGE */
+  .show-type-badge { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.5px; background: var(--warm); border-radius: 4px; padding: 1px 6px; color: var(--muted); margin-left: 0.25rem; }
+
+  /* FLAIR */
+  .flair { display: inline-block; font-size: 0.65rem; background: var(--warm); border: 1px solid var(--border); border-radius: 10px; padding: 1px 7px; color: var(--muted); cursor: pointer; transition: all 0.12s; white-space: nowrap; }
+  .flair:hover { border-color: var(--accent); color: var(--accent); }
+  .flair.set { background: #e8f4ff; border-color: var(--accent); color: var(--accent); font-weight: 500; }
+  .flair-picker { background: white; border: 1.5px solid var(--border); border-radius: 12px; padding: 1rem; margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.4rem; animation: fadeUp 0.2s ease; }
+  .flair-option { font-size: 0.75rem; background: var(--warm); border: 1px solid var(--border); border-radius: 10px; padding: 0.25rem 0.75rem; cursor: pointer; transition: all 0.12s; }
+  .flair-option:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* IK KIJK MEE */
+  .watching-bar { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 0.875rem 1.25rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .watching-info { font-size: 0.82rem; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; }
+  .watching-avatars { display: flex; }
+  .watching-avatar { width: 22px; height: 22px; border-radius: 50%; border: 2px solid white; margin-left: -6px; font-size: 0.55rem; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
+  .watching-avatar:first-child { margin-left: 0; }
+  .btn-watching { border: 1.5px solid var(--border); background: white; border-radius: 8px; padding: 0.35rem 0.9rem; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: all 0.15s; color: var(--muted); }
+  .btn-watching:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-watching.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* NOTIFICATIES */
+  .notif-bell { position: relative; cursor: pointer; background: rgba(255,255,255,0.1); border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; border: none; }
+  .notif-bell:hover { background: rgba(255,255,255,0.18); }
+  .notif-dot { position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; background: #ef4444; border-radius: 50%; border: 1.5px solid var(--ink); display: none; }
+  .notif-dot.visible { display: block; }
+  .notif-panel { position: absolute; top: 55px; right: 1rem; width: 320px; background: white; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); z-index: 200; animation: fadeUp 0.2s ease; display: none; }
+  .notif-panel.open { display: block; }
+  .notif-header { padding: 1rem 1.25rem 0.75rem; font-size: 0.78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .notif-item { padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--border); font-size: 0.82rem; line-height: 1.5; cursor: pointer; transition: background 0.1s; }
+  .notif-item:hover { background: var(--paper); }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-item.unread { background: #f0f7ff; }
+  .notif-who { font-weight: 600; color: var(--ink); }
+  .notif-time { font-size: 0.72rem; color: var(--muted); margin-top: 0.15rem; }
+  .notif-empty { padding: 2rem 1.25rem; text-align: center; color: var(--muted); font-size: 0.85rem; }
+
+  @media (max-width: 768px) {
+    .container { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+    .media-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN OVERLAY -->
+<div id="loginOverlay" class="login-overlay">
+  <div class="login-card">
+    <div class="login-logo">Episode<span>Hub</span></div>
+    <div class="login-tagline">Verbinden met andere kijkers.<br>Verwonderen over elke aflevering.</div>
+
+    <button class="btn-social btn-apple-full" onclick="loginWith('apple')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.42c1.27.07 2.18.69 3.08.73.95.03 1.86-.68 3.06-.73 2.22.09 3.72 1.88 3.72 1.88-3.43 2.05-2.88 6.37.32 7.85-.6 1.5-1.3 2.87-2.18 3.13zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+      Doorgaan met Apple
+    </button>
+    <button class="btn-social btn-google-full" onclick="loginWith('google')">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Doorgaan met Google
+    </button>
+
+    <div class="login-divider">of maak een account aan</div>
+
+    <input class="login-input" id="loginUsername" type="text" placeholder="Gebruikersnaam (bijv. WvL_Fan_NL)" maxlength="30" style="margin-bottom:0.75rem;">
+    <button class="btn-continue" onclick="loginWithUsername()">Account aanmaken →</button>
+
+    <div class="login-note">EpisodeHub is gratis om te lezen. Je hebt een account nodig om te reageren. Geen spam, geen advertenties.</div>
+    <span class="login-skip" onclick="skipLogin()">Alleen kijken, niet reageren →</span>
+  </div>
+</div>
+
+<header>
+  <div class="logo">Episode<span>Hub</span></div>
+  <div class="header-right">
+    <div id="headerUserArea"></div>
+    <button class="notif-bell" id="notifBell" onclick="toggleNotifPanel()" title="Notificaties">
+      🔔
+      <div class="notif-dot" id="notifDot"></div>
+    </button>
+    <button onclick="openTestPanel()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:0.3rem 0.8rem;color:rgba(255,255,255,0.8);font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">🧪 Test</button>
+    <span class="tag-beta">Beta</span>
+  </div>
+</header>
+
+<!-- Notification panel (outside header for z-index) -->
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-header">
+    <span>Notificaties</span>
+    <span style="font-size:0.72rem;color:var(--accent);cursor:pointer;" onclick="markAllRead()">Alles gelezen</span>
+  </div>
+  <div id="notifList"><div class="notif-empty">Nog geen notificaties.<br>Reageer op een aflevering om ze te ontvangen.</div></div>
+</div>
+
+
+<div class="show-bar" id="showBar">
+  <div class="show-chip active" onclick="selectShow('wvl', this)">❄️ Winter vol Liefde S3</div>
+  <div class="show-chip" onclick="selectShow('emjf', this)">🌴 Echte Meisjes in de Jungle</div>
+  <div class="show-chip" onclick="selectShow('zomergasten', this)">🌿 Zomergasten</div>
+  <div class="show-chip" onclick="selectShow('onze_oceanen', this)">🌊 Onze Oceanen</div>
+  <button class="add-show-btn" onclick="openAddShowModal()">+ Show toevoegen</button>
+</div>
+
+<div class="container">
+  <aside class="sidebar">
+    <div class="season-group">
+      <div class="sidebar-title">Navigeer per aflevering</div>
+      <div class="season-label" id="seasonLabel">Seizoen 2025</div>
+      <ul class="ep-list" id="epList"></ul>
+    </div>
+    <div class="rules-box">
+      <h4>📋 Community regels</h4>
+      <div class="rule"><span class="rule-icon">✅</span><span>Praat over <em>gedrag</em> in de show, niet over de mens zelf</span></div>
+      <div class="rule"><span class="rule-icon">✅</span><span>Kritiek op keuzes in het spel mag altijd</span></div>
+      <div class="rule"><span class="rule-icon">✅</span><span>Houd spoilers binnen de juiste aflevering</span></div>
+      <div class="rule"><span class="rule-icon">❌</span><span>Geen persoonlijke aanvallen of schelden</span></div>
+
+    </div>
+    <div id="trendingFeed"></div>
+  </aside>
+
+  <main id="mainContent"></main>
+</div>
+
+<!-- Strike modal -->
+<div class="overlay" id="strikeOverlay">
+  <div class="modal">
+    <h2>Jouw reactiescore</h2>
+    <div class="strike-modal-dots" id="strikeModalDots"></div>
+    <p id="strikeModalText"></p>
+    <p style="font-size:0.8rem;color:var(--muted);">Bij 3 strikes krijg je 24 uur de tijd om bij te komen. Daarna kun je gewoon weer meedoen.</p>
+    <div class="modal-actions"><button class="btn-add" onclick="closeStrikeModal()">Sluiten</button></div>
+  </div>
+</div>
+
+<!-- Add show modal -->
+<div class="overlay" id="addShowOverlay">
+  <div class="modal">
+    <h2>Show toevoegen</h2>
+    <input type="text" id="showNameInput" placeholder="Naam van de show">
+    <select id="showType">
+      <option value="">Type show...</option>
+      <option>Reality dating</option>
+      <option>Survival / avontuur</option>
+      <option>Talent / competitie</option>
+      <option>Drama serie</option>
+      <option>Anders</option>
+    </select>
+    <input type="text" id="showNetwork" placeholder="Zender of platform (RTL4, Netflix, Videoland...)">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeAddShowModal()">Annuleer</button>
+      <button class="btn-add" onclick="addShow()">Toevoegen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let strikes = 0;
+let karma = 0;
+let currentUser = null;
+let userFlair = null; // chosen flair label
+let watchingEpisodes = new Set(); // episode IDs the user is watching
+let watchingCounts = {}; // ep.id → simulated count
+let notifications = []; // { id, text, who, time, epId, unread }
+let notifCounter = 0;
+let currentShow = 'wvl';
+let currentEp = 'S01E03';
+let activeTab = 'discussie';
+let activeFilters = [];
+let isChecking = false;
+let pendingText = '';
+let pendingRewrite = '';
+
+// ===== DATA =====
+const shows = {
+  wvl: { name:"Winter vol Liefde", emoji:"❄️", type:"reality", seasons:[{ label:"Seizoen 3 · jan–mrt 2026 · RTL4", episodes:[
+    { id:"S03E01", name:"De eerste bezoekers", aired:"5 jan", locked:false, moments:[{t:"04:12",label:"Hans zingt Edelweiss 🎵"},{t:"18:30",label:"Claudia's eerste reactie op Viktor"}] },
+    { id:"S03E02", name:"Eerste indrukken", aired:"6 jan", locked:false, moments:[{t:"09:45",label:"Robin toont zijn houten huisje"},{t:"22:10",label:"Elsje keert terug"}] },
+    { id:"S03E03", name:"De strijd begint", aired:"7 jan", locked:false },
+    { id:"S03E04", name:"Spanning bij Claudia", aired:"13 jan", locked:false },
+    { id:"S03E05", name:"Hans en zijn dates", aired:"14 jan", locked:false, moments:[{t:"11:20",label:"De lamskop-avond 🐑"},{t:"31:05",label:"Hans mist Nederland"}] },
+    { id:"S03E06", name:"Robin zoekt zijn match", aired:"15 jan", locked:false },
+    { id:"S03E07", name:"Monique snauwt", aired:"20 jan", locked:false, moments:[{t:"17:55",label:"Monique: 'niet mijn gunfactor' 😂"}] },
+    { id:"S03E08", name:"Klaas opent zijn hart", aired:"21 jan", locked:false },
+    { id:"S03E09", name:"Hanneke flirt erop los", aired:"22 jan", locked:false },
+    { id:"S03E10", name:"André en de lasagne-date", aired:"27 jan", locked:false, moments:[{t:"08:33",label:"Gilbert voeten op tafel 😤"}] },
+    { id:"S03E11", name:"Elsje maakt een keuze", aired:"28 jan", locked:false },
+    { id:"S03E12", name:"Nog niet uitgezonden", aired:"29 jan", locked:false },
+    { id:"S03E13", name:"Nog niet uitgezonden", aired:"3 feb", locked:false },
+    { id:"S03E14", name:"Nog niet uitgezonden", aired:"4 feb", locked:false },
+    { id:"S03E15", name:"Nog niet uitgezonden", aired:"5 feb", locked:false },
+    { id:"S03E16", name:"Nog niet uitgezonden", aired:"10 feb", locked:false },
+    { id:"S03E17", name:"Nog niet uitgezonden", aired:"11 feb", locked:false },
+    { id:"S03E18", name:"Nog niet uitgezonden", aired:"12 feb", locked:false },
+    { id:"S03E19", name:"Nog niet uitgezonden", aired:"17 feb", locked:false },
+    { id:"S03E20", name:"Nog niet uitgezonden", aired:"18 feb", locked:false },
+    { id:"S03E21", name:"Nog niet uitgezonden", aired:"19 feb", locked:false },
+    { id:"S03E22", name:"Nog niet uitgezonden", aired:"24 feb", locked:false },
+    { id:"S03E23", name:"Nog niet uitgezonden", aired:"25 feb", locked:false },
+    { id:"S03E24", name:"Nog niet uitgezonden", aired:"26 feb", locked:false },
+    { id:"S03E25", name:"Nog niet uitgezonden", aired:"3 mrt", locked:false },
+    { id:"S03E26", name:"Nog niet uitgezonden", aired:"4 mrt", locked:false },
+    { id:"S03E27", name:"Finale", aired:"5 mrt", locked:false },
+  ]}]},
+  emjf: { name:"Echte Meisjes in de Jungle", emoji:"🌴", type:"reality", seasons:[{ label:"Familie-editie · start 23 feb · Videoland", episodes:[
+    { id:"S07E01", name:"Start 23 februari", aired:"23 feb", locked:false, moments:[{t:"03:10",label:"Amy Rose & Jacqueline arriveren"},{t:"26:40",label:"Aisha & Jetty (Mai Tai!) eerste moment 💃"}] },
+    { id:"S07E02", name:"Nog niet uitgezonden", aired:"2 mrt", locked:false },
+    { id:"S07E03", name:"Nog niet uitgezonden", aired:"9 mrt", locked:false },
+    { id:"S07E04", name:"Nog niet uitgezonden", aired:"16 mrt", locked:false },
+    { id:"S07E05", name:"Nog niet uitgezonden", aired:"23 mrt", locked:false },
+  ]}]},
+  zomergasten: { name:"Zomergasten", emoji:"🌿", type:"human interest", seasons:[{ label:"VPRO · Seizoen 2025 · NPO1", episodes:[
+    { id:"ZG2025E01", name:"Filiz Tat", aired:"20 jul", locked:false, moments:[{t:"12:05",label:"Over identiteit en taal"},{t:"1:04:30",label:"Het fragment dat iedereen stilzette"}] },
+    { id:"ZG2025E02", name:"Roxane van Iperen", aired:"27 jul", locked:false, moments:[{t:"08:20",label:"Tweede Wereldoorlog-fragment"},{t:"52:10",label:"'Wat heeft literatuur ons te bieden?'"}] },
+    { id:"ZG2025E03", name:"Famke Louise", aired:"3 aug", locked:false, moments:[{t:"19:45",label:"Over opgroeien in de spotlight"}] },
+    { id:"ZG2025E04", name:"Ebrahim Rasool", aired:"10 aug", locked:false },
+    { id:"ZG2025E05", name:"Aflevering 5", aired:"17 aug", locked:false },
+    { id:"ZG2025E06", name:"Aflevering 6", aired:"24 aug", locked:false },
+  ]}]},
+  onze_oceanen: { name:"Onze Oceanen", emoji:"🌊", type:"documentaire", seasons:[{ label:"NTR · 2024 · NPO2 · 6 delen", episodes:[
+    { id:"OO01", name:"De levende zee", aired:"jan 2025", locked:false, moments:[{t:"02:30",label:"Eerste onderwateropname — wauw 😮"},{t:"38:00",label:"De koraalrif-sequentie"}] },
+    { id:"OO02", name:"Gevaar in de diepte", aired:"jan 2025", locked:false, moments:[{t:"14:15",label:"De orkaopname van dichtbij"}] },
+    { id:"OO03", name:"Zee van leven", aired:"feb 2025", locked:false },
+    { id:"OO04", name:"De stille oceaan", aired:"feb 2025", locked:false },
+    { id:"OO05", name:"Verborgen werelden", aired:"mrt 2025", locked:false },
+    { id:"OO06", name:"Onze toekomst", aired:"mrt 2025", locked:false, moments:[{t:"41:20",label:"Het slotverhaal — emotioneel"},{t:"52:00",label:"De nalatenschap"}] },
+  ]}]},
+};
+
+const episodeData = {
+  "emjf-S07E01": {
+    aiRecap: "In de eerste aflevering van de Familie-editie landen alle duo's in de Thaise jungle. Direct is de spanning voelbaar: Amy Rose en moeder Jacqueline moeten laten zien dat ze als team kunnen functioneren. I Am Aisha en moeder Jetty brengen muzikale energie mee, maar de jungle is geen podium. Louisa (bekend van de vechtpartij in een eerder seizoen) lijkt vastberaden het dit keer anders aan te pakken — maar de tweelingzussen Sharon en Esmee zijn er ook weer bij.",
+    media: [
+      { type:"podcast", icon:"🎙️", iconClass:"icon-podcast", title:"Aflevering 1 besproken: wie valt op?", source:"Reality Recap NL Podcast", url:"#" },
+      { type:"artikel", icon:"📰", iconClass:"icon-article", title:"Dit zijn alle duo's van de Familie-editie", source:"RTL Boulevard", url:"#" },
+      { type:"video", icon:"▶️", iconClass:"icon-video", title:"Trailer: Echte Meisjes Familie-editie 2026", source:"YouTube · Videoland", url:"#" },
+    ],
+    comments: [
+      { user:"JungleFan_NL", avatar:"#2d7a52", time:"gisteren 21:12", text:"Wat een sterke eerste aflevering! Amy Rose vind ik zo sympathiek, hopelijk komt ze ver. Maar die dynamiek tussen Louisa en Esmee gaat zeker ontploffen 👀", likes:9, liked:false },
+      { user:"realityqueen_nl", avatar:"#9c5bb5", time:"gisteren 22:30", text:"I Am Aisha en haar moeder zijn echt het leukste duo. Jetty van Mai Tai!! Wat een legendarisch koppel om te zien samenwerken in de jungle.", likes:14, liked:false },
+      { user:"JungleKijker", avatar:"#1a7fd4", time:"vandaag 10:05", text:"Ik ben zo benieuwd hoe de tweelingzussen Sharon en Esmee het doen — vorig seizoen was Esmee geblesseerd geraakt. Nu zijn ze samen en dat is toch een heel ander verhaal.", likes:6, liked:false },
+    ]
+  },
+  "wvl-S03E03": {
+    aiRecap: "In aflevering 3 beginnen de logees te stromen. Bij Claudia in Oostenrijk meldt zich al snel meer dan één man, terwijl Hans in Noorwegen op zijn manier probeert indruk te maken. Robin in Zweden is enthousiast maar ook nerveus. Hanneke in Saalbach laat alvast zien dat ze echt haar eigen mening heeft.",
+    media: [
+      { type:"podcast", icon:"🎙️", iconClass:"icon-podcast", title:"De Nabeschouwing – Veronica Superguide (dagelijks na uitzending)", source:"Spotify / Apple Podcasts", url:"https://open.spotify.com/show/1WMzeFoMw9f8c4ZUAezEZx" },
+      { type:"podcast", icon:"🎙️", iconClass:"icon-podcast", title:"Dit Moet Je Zien! – Patrick & Eline bespreken WvL", source:"Spotify / Apple Podcasts", url:"https://open.spotify.com/show/4rFxsezWg2vzPsbqqCFWAA" },
+      { type:"artikel", icon:"📰", iconClass:"icon-article", title:"Dit zijn alle 8 deelnemers van Winter vol Liefde 2026", source:"Veronica Superguide", url:"https://www.veronicasuperguide.nl/nieuws/winter-vol-liefde-2026-wie-zijn-de-kandidaten-en-wanneer-te-zien" },
+      { type:"artikel", icon:"📰", iconClass:"icon-article", title:"Welke mannen doen er mee voor Claudia?", source:"Veronica Superguide", url:"https://www.veronicasuperguide.nl/nieuws/welke-mannen-doen-er-mee-voor-claudia-in-winter-vol-liefde-2026" },
+    ],
+    comments: [
+      { user:"TvKoning_NL", avatar:"#1a7fd4", time:"gisteren 21:34", text:"Hans is zo authentiek — 73 jaar en nog vol goede moed. Echt mijn favoriet dit seizoen 🥹", likes:12, liked:false },
+      { user:"realityjunkie", avatar:"#5b8dd9", time:"gisteren 22:01", text:"Claudia is zo nuchter en eerlijk. Dat is precies wat dit programma nodig heeft. En die Ben die passief agressief werd... 🙄", likes:8, liked:false },
+      { user:"WvL_Fan", avatar:"#22c27a", time:"vandaag 09:15", text:"Robin in zijn Zweedse houten huisje is gewoon sprookjesachtig. Ik ben zo benieuwd wie er voor hem terugkomt!", likes:5, liked:false },
+    ]
+  }
+};
+
+function getEpData(sk, eid) {
+  return episodeData[`${sk}-${eid}`] || { aiRecap:null, media:[], comments:[] };
+}
+
+// ===== STRIKE UI =====
+let totalPosts = 0;
+
+const avatarColors = ['#1a7fd4','#22c27a','#9c5bb5','#e8a045','#e05b3a','#2d7a52','#c04050'];
+
+function renderUserHeader() {
+  const el = document.getElementById('headerUserArea');
+  if (!currentUser) {
+    el.innerHTML = `<button class="btn-login" onclick="document.getElementById('loginOverlay').style.display='flex'">Inloggen / Account aanmaken</button>`;
+  } else {
+    const col = avatarColors[currentUser.charCodeAt(0) % avatarColors.length];
+    const karmaLabel = karma >= 50 ? '⭐⭐' : karma >= 10 ? '⭐' : '';
+    const watchCount = watchingEpisodes.size;
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:0.5rem;">
+      ${userFlair ? `<span class="flair set" onclick="openFlairPicker()" title="Verander flair">${userFlair}</span>` : `<span class="flair" onclick="openFlairPicker()" title="Kies een flair">+ flair</span>`}
+      <div class="user-pill" title="${karma} karma · ${watchCount} afleveringen bijgehouden">
+        <div class="user-pill-avatar" style="background:${col}">${currentUser[0].toUpperCase()}</div>
+        <span class="user-pill-name">${currentUser}</span>
+        ${karma > 0 ? `<span class="user-pill-karma">${karmaLabel} ${karma}</span>` : ''}
+      </div>
+    </div>`;
+  }
+}
+
+function updateStrikeUI() {
+  // Strikes no longer shown in header - just update user pill karma
+  renderUserHeader();
+}
+
+function getMirrorQuestion(moderationMessage) {
+  const msg = (moderationMessage || '').toLowerCase();
+  if (msg.includes('uiterlijk') || msg.includes('body') || msg.includes('lelijk') || msg.includes('vet') || msg.includes('dik')) {
+    return "Waarom triggert het uiterlijk van iemand jou zo? Soms zegt onze reactie op anderen meer over onszelf dan over hen.";
+  } else if (msg.includes('scheld') || msg.includes('aanval') || msg.includes('haat')) {
+    return "Wat raak je zo aan in wat deze persoon deed? Achter boosheid zit bijna altijd een diepere behoefte of teleurstelling.";
+  } else if (msg.includes('seksu') || msg.includes('hot') || msg.includes('lekker')) {
+    return "We kijken allemaal weleens naar aantrekkelijkheid — maar hoe zou jij je voelen als iemand dit over jou schreef op internet?";
+  } else {
+    return "Wat maakt dat je zo sterk reageert? Soms helpt het om even stil te staan bij wat er echt in je omgaat.";
+  }
+}
+
+function getGCExample(moderationMessage) {
+  const msg = (moderationMessage || '').toLowerCase();
+  if (msg.includes('uiterlijk') || msg.includes('body') || msg.includes('lelijk')) {
+    return {
+      principle: "Observeer gedrag of keuzes, niet hoe iemand eruitziet. Uiterlijk is wie iemand ís — dat staat los van de show.",
+      link: "https://www.geweldlozecommunicatie.org",
+      linkLabel: "Leer observeren zonder oordeel — GC Kring NL"
+    };
+  } else if (msg.includes('scheld') || msg.includes('aanval') || msg.includes('persoon')) {
+    return {
+      principle: "Benoem je eigen gevoel ('ik vond...') in plaats van een oordeel over de persoon. Dat is krachtiger én respectvoller.",
+      link: "https://soofos.nl/cursus/geweldloos-communiceren/",
+      linkLabel: "Gratis cursus geweldloos communiceren — Soofos"
+    };
+  } else if (msg.includes('seksu') || msg.includes('hot') || msg.includes('lekker')) {
+    return {
+      principle: "Seksuele opmerkingen over deelnemers kunnen kwetsend zijn, ook als ze positief bedoeld zijn. Mensen zijn meer dan hun uiterlijk.",
+      link: "https://www.geweldlozecommunicatie.org",
+      linkLabel: "Meer over respectvolle communicatie — GC Kring NL"
+    };
+  } else {
+    return {
+      principle: "Het verschil: praat over wat iemand deed in de show, niet over wie iemand is als mens.",
+      link: "https://soofos.nl/cursus/geweldloos-communiceren/",
+      linkLabel: "Gratis cursus geweldloos communiceren — Soofos"
+    };
+  }
+}
+
+function addStrike() {
+  strikes = Math.min(strikes + 1, 3);
+  updateStrikeUI();
+}
+
+function showStrikeModal() {
+  const dots = document.getElementById('strikeModalDots');
+  dots.innerHTML = [1,2,3].map(i => `<div class="strike-modal-dot ${i <= strikes ? 'filled' : ''}"></div>`).join('');
+  const msgs = [
+    'Je hebt nog geen strikes. Zo houd je het: praat over wat er in de show gebeurt, niet over wie mensen zijn als persoon.',
+    'Je hebt 1 strike. Nog twee en je wordt 24 uur geblokkeerd. Tip: zeg wat je voelde of vond, niet wat je van de persoon vindt.',
+    'Je hebt 2 strikes. Let op — nog één en je kunt tijdelijk niet meer reageren. Misschien even ademhalen voor je typt?',
+    'Je hebt 3 strikes en bent 24 uur geblokkeerd. Morgen kun je gewoon weer meedoen. We zien je terug! 👋'
+  ];
+  document.getElementById('strikeModalText').textContent = msgs[strikes];
+  document.getElementById('strikeOverlay').classList.add('open');
+}
+function closeStrikeModal() { document.getElementById('strikeOverlay').classList.remove('open'); }
+function openAddShowModal() { document.getElementById('addShowOverlay').classList.add('open'); }
+function closeAddShowModal() { document.getElementById('addShowOverlay').classList.remove('open'); }
+
+// ===== AI MODERATION =====
+async function checkWithAI(text) {
+  const system = `Je bent een strenge maar eerlijke moderator voor EpisodeHub, een Nederlands platform om te discussiëren over reality TV-shows zoals Winter vol Liefde, MAFS en Love Island. De deelnemers zijn gewone mensen die meedoen aan een TV-programma. Zij verdienen bescherming tegen online haat.
+
+## JOUW TAAK
+Beoordeel of een reactie de kandidaat als PERSOON aanvalt, of alleen iets zegt over hun GEDRAG in de show.
+
+## WAT MAG WEL (verdict: ok)
+- Meningen over gedrag en keuzes in de show: "Thomas flirtte veel met Roos terwijl hij Anouk leuk vindt"
+- Kritiek op strategie of spelkeuzes: "Ik vind dat Sander te snel opgaf"  
+- Emotionele reacties op wat er GEBEURDE: "Ik was zo gefrustreerd door die scene"
+- Positieve opmerkingen over persoonlijkheid die in de show naar voren kwamen: "Lieke lijkt echt authentiek"
+
+## WAT IS EEN WAARSCHUWING (verdict: warn)
+- Seksuele opmerkingen over uiterlijk, ook positief: "Thomas zag er hot uit", "wat een lekker ding"
+- Lichte neerbuigendheid: "Anouk is echt een dramaqueen", "wat een aansteller"
+- Speculatie over privéleven buiten de show
+
+## WAT IS GEBLOKKEERD (verdict: block)
+- Opmerkingen over uiterlijk die negatief zijn, ook in straattaal of tussentaal:
+  "teringlelijk", "lelijk wijf", "heeft een kop als een...", "wat een ukkepuk", "ze ziet er uit als..."
+- Schelden op de persoon: "stomme trut", "idioot", "mongool", "debiel", "eikel"
+- Wensen van kwaad: "ik hoop dat ze eruit vliegt en nooit meer TV maakt"
+- Body shaming of racistische opmerkingen
+- Combinaties die samen aanvallend zijn, ook al zou elk onderdeel apart oké zijn
+
+## SPECIALE AANDACHT VOOR NEDERLANDS TAALGEBRUIK
+Let extra goed op typisch Nederlandse/Vlaamse informele scheldwoorden en straattaal:
+- "teringlelijk", "kutwijf", "kloothommel", "lul", "eikel", "trut", "tyfuswijf"
+- Uitdrukkingen met ziektenamen als scheldwoord (tyfus-, kankер-, godver-)
+- Neerbuigende diminutieven: "zo'n tutje", "dat suffertje"
+- Informeel maar aanvallend: "wat een aanfluiting", "zielig mens"
+
+## FORMAAT
+Antwoord UITSLUITEND als geldig JSON, geen andere tekst, geen uitleg buiten het JSON-object:
+{"verdict":"ok"|"warn"|"block","message":"Vriendelijke maar duidelijke Nederlandse uitleg in 1-2 zinnen waarom, gericht aan de gebruiker","rewrite":"Alleen invullen bij warn: een herschreven versie die dezelfde mening uitdrukt maar respectvol"}
+
+Bij "block": geef in message ook aan wat specifiek het probleem was (bijv. "Een opmerking over iemands uiterlijk valt onder body shaming").`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",
+        max_tokens:300,
+        system,
+        messages:[{role:"user",content:`Reactie: "${text}"`}]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '';
+    return JSON.parse(raw.replace(/```json|```/g,'').trim());
+  } catch {
+    return { verdict:"ok", message:"" };
+  }
+}
+
+// ===== POST FLOW =====
+async function postComment() {
+  if (isChecking || strikes >= 3) return;
+  const textarea = document.getElementById('newComment');
+  const text = textarea.value.trim();
+  if (!text) return;
+
+  const btn = document.getElementById('postBtn');
+  const indicator = document.querySelector('.ai-checking-indicator');
+  const feedbackEl = document.getElementById('aiFeedback');
+
+  feedbackEl.className = 'ai-feedback';
+  feedbackEl.innerHTML = '';
+
+  isChecking = true;
+  btn.disabled = true;
+  btn.textContent = 'Checken...';
+  indicator.classList.add('visible');
+
+  let result;
+  try { result = await checkWithAI(text); }
+  catch { result = { verdict:"ok", message:"" }; }
+
+  isChecking = false;
+  btn.disabled = false;
+  btn.textContent = 'Plaatsen';
+  indicator.classList.remove('visible');
+
+  pendingText = text;
+  pendingRewrite = result.rewrite || '';
+
+  if (result.verdict === 'ok') {
+    doSubmit(text, textarea);
+    if (result.message) {
+      feedbackEl.className = 'ai-feedback ok visible';
+      feedbackEl.innerHTML = `<div class="ai-feedback-header">✅ Goede reactie!</div>${result.message}`;
+      setTimeout(() => { feedbackEl.className = 'ai-feedback'; }, 3000);
+    }
+  } else if (result.verdict === 'warn') {
+    feedbackEl.className = 'ai-feedback warn visible';
+    feedbackEl.innerHTML = `
+      <div class="ai-feedback-header">⚠️ Even checken...</div>
+      <div>${result.message}</div>
+      ${result.rewrite ? `<div style="margin-top:0.6rem;padding:0.6rem 0.75rem;background:rgba(0,0,0,0.05);border-radius:6px;font-style:italic;font-size:0.82rem;">"${result.rewrite}"</div>` : ''}
+      <div class="feedback-actions">
+        <button class="feedback-btn fb-post" onclick="forcePost()">Toch plaatsen</button>
+        ${result.rewrite ? `<button class="feedback-btn fb-rewrite" onclick="useRewrite()">Vriendelijkere versie gebruiken</button>` : ''}
+        <button class="feedback-btn fb-cancel" onclick="cancelFeedback()">Herschrijven</button>
+      </div>`;
+  } else {
+    addStrike();
+    feedbackEl.className = 'ai-feedback block visible';
+    const left = 3 - strikes;
+    const gcExample = getGCExample(result.message);
+    const mirrorQ = getMirrorQuestion(result.message);
+    feedbackEl.innerHTML = `
+      <div class="ai-feedback-header">✋ Even pauzeren <span class="strike-earned">Strike ${strikes}/3</span></div>
+      <div style="margin-bottom:0.75rem;">${result.message}</div>
+
+      ${result.rewrite ? `
+      <div class="gc-card">
+        <div class="gc-card-title">💬 Hoe zou je dit anders kunnen zeggen?</div>
+        <div class="gc-examples">
+          <div class="gc-row"><span class="gc-bad">❌ Wat je schreef landt zo: een aanval op de persoon</span></div>
+          <div class="gc-row"><span class="gc-good">✅ Vriendelijkere versie: "${result.rewrite}"</span></div>
+        </div>
+        <div class="gc-principle mirror-question">🪞 ${mirrorQ}</div>
+        <div style="margin-top:0.6rem;display:flex;gap:0.5rem;flex-wrap:wrap;">
+          <a href="${gcExample.link}" target="_blank" class="gc-link">${gcExample.linkLabel} →</a>
+        </div>
+      </div>
+      <div class="feedback-actions" style="margin-top:0.75rem;">
+        <button class="feedback-btn fb-rewrite" onclick="useRewrite()">✅ Gebruik vriendelijkere versie</button>
+        <button class="feedback-btn fb-cancel" onclick="cancelFeedback()">✏️ Zelf herschrijven</button>
+      </div>` : `
+      <div class="gc-card">
+        <div class="gc-card-title">🪞 ${mirrorQ}</div>
+        <div class="gc-principle">${gcExample.principle}</div>
+        <a href="${gcExample.link}" target="_blank" class="gc-link">${gcExample.linkLabel} →</a>
+      </div>
+      <div class="feedback-actions" style="margin-top:0.75rem;">
+        <button class="feedback-btn fb-cancel" onclick="cancelFeedback()">✏️ Herschrijven</button>
+      </div>`}
+
+      ${strikes < 3 ? `<div style="margin-top:0.5rem;font-size:0.76rem;color:#8a2010;">Nog ${left} strike${left!==1?'s':''} voordat je 24 uur rust krijgt om bij te komen.</div>` : ''}`;
+    textarea.value = '';
+    if (strikes >= 3) renderMain();
+  }
+}
+
+function forcePost() {
+  const textarea = document.getElementById('newComment');
+  doSubmit(pendingText, textarea);
+  document.getElementById('aiFeedback').className = 'ai-feedback';
+}
+
+function useRewrite() {
+  document.getElementById('newComment').value = pendingRewrite;
+  document.getElementById('aiFeedback').className = 'ai-feedback';
+}
+
+function cancelFeedback() {
+  document.getElementById('aiFeedback').className = 'ai-feedback';
+}
+
+function doSubmit(text, textarea) {
+  const key = `${currentShow}-${currentEp}`;
+  if (!episodeData[key]) episodeData[key] = { aiRecap:null, media:[], comments:[] };
+  const col = currentUser ? avatarColors[currentUser.charCodeAt(0) % avatarColors.length] : '#1a7fd4';
+  episodeData[key].comments.unshift({
+    user: currentUser || 'Gast',
+    avatar: col,
+    time: 'zojuist',
+    text,
+    likes: 0,
+    liked: false,
+    karma: karma,
+    flair: userFlair
+  });
+  textarea.value = '';
+  karma += 2;
+  renderUserHeader();
+  renderCommentList();
+  // Simulate a reply notification after a few seconds (demo)
+  if (currentUser) {
+    setTimeout(() => {
+      addNotification(`reageerde op jouw reactie: "${text.slice(0,40)}${text.length>40?'…':''}"`, 'WvL_Fan_NL', currentEp);
+    }, 6000 + Math.random() * 8000);
+  }
+}
+
+// ===== RENDER =====
+function selectShow(key, el) {
+  document.querySelectorAll('.show-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentShow = key;
+  const show = shows[key];
+  if (show) {
+    const first = show.seasons[0].episodes.find(e => !e.locked);
+    currentEp = (first || show.seasons[0].episodes[0]).id;
+  }
+  activeFilters = [];
+  renderSidebar();
+  renderMain();
+}
+
+function selectEp(id) {
+  currentEp = id;
+  activeFilters = [];
+  renderSidebar();
+  renderMain();
+}
+
+function renderSidebar() {
+  const show = shows[currentShow];
+  if (!show) return;
+  let html = '';
+  show.seasons.forEach(season => {
+    season.episodes.forEach(ep => {
+      html += `<li class="ep-item ${ep.id===currentEp?'active':''}" 
+        onclick="${ep.locked?'':''}" 
+        ${ep.locked?'style="cursor:default;opacity:0.6"':`onclick="selectEp('${ep.id}')"`}>
+        <span class="ep-badge">${ep.id}</span>
+        <span class="ep-name">${ep.locked?ep.aired:ep.name}</span>
+        ${ep.locked?'<span class="ep-lock">🔒</span>':''}
+      </li>`;
+    });
+  });
+  document.getElementById('epList').innerHTML = html;
+}
+
+function renderMain() {
+  const show = shows[currentShow];
+  if (!show) return;
+  let ep = null;
+  show.seasons.forEach(s => s.episodes.forEach(e => { if (e.id===currentEp) ep=e; }));
+  if (!ep) return;
+
+  const data = getEpData(currentShow, currentEp);
+  const banned = strikes >= 3;
+  // Show type badge
+  const typeLabel = show.type ? `<span class="show-type-badge">${show.type}</span>` : '';
+
+  // Moment clips
+  const momentsHtml = ep.moments && ep.moments.length ? `
+    <div class="moments-section">
+      <div class="moments-header">⚡ Iconische momenten deze aflevering</div>
+      <div class="moment-chips">
+        ${ep.moments.map(m => `<a class="moment-chip" href="#" onclick="return false" title="Spring naar ${m.t}">
+          <span class="moment-time">${m.t}</span> ${m.label}
+        </a>`).join('')}
+        <a class="moment-chip" href="#" onclick="addMoment('${ep.id}');return false;" style="border-style:dashed;">
+          + Moment toevoegen
+        </a>
+      </div>
+    </div>` : `
+    <div class="moments-section">
+      <div class="moment-chips">
+        <a class="moment-chip" href="#" onclick="addMoment('${ep.id}');return false;" style="border-style:dashed;color:var(--muted);">
+          📌 Voeg een iconisch moment toe met tijdstempel
+        </a>
+      </div>
+    </div>`;
+
+  // Ik kijk mee
+  const isWatching = watchingEpisodes.has(currentEp);
+  if (!watchingCounts[currentEp]) watchingCounts[currentEp] = Math.floor(Math.random() * 120) + 8;
+  const wCount = watchingCounts[currentEp] + (isWatching ? 1 : 0);
+  const sampleColors = ['#1a7fd4','#22c27a','#9c5bb5','#e8a045','#e05b3a','#2d7a52'];
+  const avatarSample = sampleColors.slice(0,4).map((col,i) =>
+    `<div class="watching-avatar" style="background:${col}">${String.fromCharCode(65+i)}</div>`).join('');
+  const watchingHtml = `
+    <div class="watching-bar">
+      <div class="watching-info">
+        <div class="watching-avatars">${avatarSample}</div>
+        <span><strong>${wCount}</strong> mensen kijken mee</span>
+      </div>
+      <button class="btn-watching ${isWatching?'active':''}" onclick="toggleWatching('${currentEp}')">
+        ${isWatching ? '✓ Ik kijk mee' : '+ Ik kijk mee'}
+      </button>
+    </div>`;
+
+  document.getElementById('mainContent').innerHTML = `
+    <div class="episode-hero">
+      <div class="ep-tag">${ep.id} ${typeLabel}</div>
+      <div class="ep-title">${show.emoji} ${ep.name}</div>
+      <div class="ep-meta">
+        <span>📺 ${show.name}</span>
+        <span>🗓️ ${ep.aired}</span>
+        <span>💬 ${data.comments.length} reacties</span>
+      </div>
+      <div class="spoiler-warning">⚠️ Alles hier bevat spoilers voor <strong>${ep.id}</strong>. Kijk andere afleveringen in de zijbalk.</div>
+    </div>
+    ${watchingHtml}
+    ${momentsHtml}
+    ${getShowInfo(currentShow)}
+    <div class="tabs">
+      <div class="tab ${activeTab==='discussie'?'active':''}" onclick="switchTab('discussie')">💬 Discussie</div>
+      <div class="tab ${activeTab==='media'?'active':''}" onclick="switchTab('media')">🎙️ Podcasts & Artikelen</div>
+      <div class="tab ${activeTab==='socials'?'active':''}" onclick="switchTab('socials')">𝕏 Wat zegt Nederland</div>
+    </div>
+    <div id="tabContent"></div>`;
+
+  renderTabContent(data, ep, banned);
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active',
+      (tab==='discussie' && t.textContent.includes('Discussie')) ||
+      (tab==='media' && t.textContent.includes('Podcasts')) ||
+      (tab==='socials' && t.textContent.includes('Nederland')));
+  });
+  const show = shows[currentShow];
+  let ep = null;
+  show.seasons.forEach(s => s.episodes.forEach(e => { if (e.id===currentEp) ep=e; }));
+  renderTabContent(getEpData(currentShow, currentEp), ep, strikes>=3);
+}
+
+function renderTabContent(data, ep, banned) {
+  const tc = document.getElementById('tabContent');
+  if (!tc) return;
+
+  if (activeTab === 'discussie') {
+    const participantMap = {
+      wvl: ['Claudia','Hans','Robin','Elsje','Hanneke','Monique','André','Klaas'],
+      emjf: ['Amy Rose','Aisha','Louisa','Demi','Sharon','Esmee','Fleur','Rosanne'],
+    };
+    const participants = participantMap[currentShow] || [];
+
+    const filterHtml = participants.length ? `<div class="filter-row">
+      <span class="filter-label">Filter op persoon:</span>
+      ${participants.map(p=>`<span class="filter-chip ${activeFilters.includes(p)?'active':''}" onclick="toggleFilter('${p}')">${p}</span>`).join('')}
+      ${activeFilters.length?'<span class="filter-chip" onclick="clearFilters()" style="background:#fce8e8;color:#c8462b;border-color:#c8462b">✕ Wis</span>':''}
+    </div>` : '';
+
+    const aiHtml = data.aiRecap ? `<div class="ai-recap"><div class="ai-label">AI samenvatting</div><div class="ai-text">${data.aiRecap}</div></div>` : '';
+
+    const postHtml = banned ? '' : !currentUser ? `
+      <div class="post-input-area" style="text-align:center;padding:1.25rem;">
+        <p style="color:var(--muted);font-size:0.875rem;margin-bottom:0.75rem;">Maak een gratis account aan om mee te praten.</p>
+        <button onclick="document.getElementById('loginOverlay').style.display='flex'" style="background:var(--accent);color:white;border:none;border-radius:8px;padding:0.5rem 1.5rem;font-family:'DM Sans',sans-serif;font-size:0.875rem;cursor:pointer;">Inloggen / Account aanmaken</button>
+      </div>` : `
+      <div id="aiFeedback" class="ai-feedback"></div>
+      <div class="post-input-area">
+        <textarea id="newComment" placeholder="Wat vond jij van deze aflevering? Spoilers voor ${ep.id} zijn hier oké."></textarea>
+        <div class="post-footer">
+          <div class="post-footer-left">
+            <small>🤖 Jouw reactie wordt gecheckt op toon</small>
+            <div class="ai-checking-indicator"><div class="spinner"></div> AI checkt je reactie...</div>
+          </div>
+          <button class="btn-post" id="postBtn" onclick="postComment()">Plaatsen</button>
+        </div>
+      </div>`;
+
+    const bannedHtml = banned ? `
+      <div class="banned-screen visible">
+        <div class="big">🌬️</div>
+        <h3>Even afkoelen — je komt er zo weer in</h3>
+        <p>Je hebt 3 strikes gekregen. Geen zorgen: na een korte koelperiode van <strong>24 uur</strong> kun je gewoon weer meedoen. Je reacties en karma blijven bewaard.</p>
+        <div class="gc-card" style="text-align:left;margin:1.5rem auto;max-width:420px;">
+          <div class="gc-card-title">🪞 Wat speelt er voor jou?</div>
+          <div class="gc-principle">Achter heftige online reacties zit bijna altijd iets echts — frustratie, herkenning, of iets wat je raakt. Dat is menselijk. Geweldloze communicatie helpt je dat te uiten zonder iemand anders te kwetsen.</div>
+          <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.6rem;">
+            <a href="https://soofos.nl/cursus/geweldloos-communiceren/" target="_blank" class="gc-link">Gratis cursus — Soofos →</a>
+            <a href="https://www.geweldlozecommunicatie.org" target="_blank" class="gc-link">GC Kring Nederland →</a>
+          </div>
+        </div>
+        <p style="font-size:0.8rem;color:var(--muted);">Je karma staat op ${karma} ⭐ — elke goede reactie bouwt dat op. We zien je morgen terug 👋</p>
+      </div>` : '';
+
+    tc.innerHTML = `${aiHtml}${filterHtml}${bannedHtml}${postHtml}<div id="commentList"></div>`;
+    renderCommentList();
+
+  } else if (activeTab === 'socials') {
+    tc.innerHTML = renderSocialsTab(currentShow);
+  } else {
+    if (!data.media.length) {
+      tc.innerHTML = `
+        <div class="empty-tab"><div class="big">🎙️</div><p>Nog geen podcasts of artikelen voor deze aflevering.<br>Ken jij een goede? Voeg 'm toe!</p></div>
+        <div class="post-input-area">
+          <textarea placeholder="Plak hier een link naar podcast, artikel of video over ${ep.id}..."></textarea>
+          <div class="post-footer"><small>Community-links worden gecontroleerd</small><button class="btn-post">Toevoegen</button></div>
+        </div>`;
+    } else {
+      tc.innerHTML = `
+        <div class="media-grid">${data.media.map(m=>`
+          <a class="media-card" href="${m.url}" target="_blank">
+            <div class="media-icon ${m.iconClass}">${m.icon}</div>
+            <div class="media-info"><div class="media-type">${m.type}</div><div class="media-title">${m.title}</div><div class="media-source">${m.source}</div></div>
+          </a>`).join('')}
+        </div>
+        <div class="post-input-area">
+          <textarea placeholder="Ken jij nog een podcast of artikel over ${ep.id}? Voeg 'm toe!"></textarea>
+          <div class="post-footer"><small>Community-bijdragen worden gecontroleerd</small><button class="btn-post">Toevoegen</button></div>
+        </div>`;
+    }
+  }
+}
+
+function renderCommentList() {
+  const el = document.getElementById('commentList');
+  if (!el) return;
+  const data = getEpData(currentShow, currentEp);
+  let list = data.comments;
+  if (activeFilters.length) list = list.filter(c => activeFilters.some(f => c.text.toLowerCase().includes(f.toLowerCase())));
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-tab"><div class="big">${activeFilters.length?'🔍':'💬'}</div><p>${activeFilters.length?'Geen reacties over '+activeFilters.join(', ')+' gevonden.':'Wees de eerste die reageert op deze aflevering!'}</p></div>`;
+    return;
+  }
+  el.innerHTML = list.map((c,i)=>`
+    <div class="comment">
+      <div class="avatar" style="background:${c.avatar}">${c.user[0]}</div>
+      <div class="comment-body">
+        <div class="comment-header">
+          <span class="comment-user">
+            ${c.user}
+            ${c.karma && c.karma>=10 ? `<span class="karma-badge">⭐ ${c.karma}</span>` : ''}
+            ${c.flair ? `<span class="flair set" style="cursor:default;">${c.flair}</span>` : ''}
+          </span>
+          <span class="comment-time">${c.time}</span>
+        </div>
+        <div class="comment-text">${c.text}</div>
+        <div class="comment-actions">
+          <span class="comment-action ${c.liked?'liked':''}" onclick="likeComment(${i})">♥ ${c.likes}</span>
+          <span class="comment-action">↩ Reageer</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function likeComment(i) {
+  const data = getEpData(currentShow, currentEp);
+  let list = data.comments;
+  if (activeFilters.length) list = list.filter(c => activeFilters.some(f => c.text.toLowerCase().includes(f.toLowerCase())));
+  const c = list[i];
+  if (!c) return;
+  c.liked = !c.liked;
+  c.likes += c.liked ? 1 : -1;
+  if (c.liked) karma += 1; // upvoting = +1 karma
+  else karma = Math.max(0, karma - 1);
+  updateStrikeUI();
+  renderCommentList();
+}
+
+function toggleFilter(name) {
+  activeFilters = activeFilters.includes(name) ? activeFilters.filter(f=>f!==name) : [...activeFilters, name];
+  const show = shows[currentShow];
+  let ep = null;
+  show.seasons.forEach(s => s.episodes.forEach(e => { if (e.id===currentEp) ep=e; }));
+  renderTabContent(getEpData(currentShow, currentEp), ep, strikes>=3);
+}
+
+function clearFilters() {
+  activeFilters = [];
+  const show = shows[currentShow];
+  let ep = null;
+  show.seasons.forEach(s => s.episodes.forEach(e => { if (e.id===currentEp) ep=e; }));
+  renderTabContent(getEpData(currentShow, currentEp), ep, strikes>=3);
+}
+
+function addShow() {
+  const name = document.getElementById('showNameInput').value.trim();
+  if (!name) return;
+  const key = name.toLowerCase().replace(/\s+/g,'_');
+  shows[key] = { name, emoji:'📺', seasons:[{ label:'Seizoen 1', episodes:[{ id:'S01E01', name:'Aflevering 1', aired:'Binnenkort', locked:false }]}]};
+  const bar = document.getElementById('showBar');
+  const chip = document.createElement('div');
+  chip.className = 'show-chip';
+  chip.textContent = `📺 ${name}`;
+  chip.onclick = () => selectShow(key, chip);
+  bar.insertBefore(chip, bar.querySelector('.add-show-btn'));
+  closeAddShowModal();
+  document.getElementById('showNameInput').value = '';
+}
+
+// ===== SHOW INFO =====
+const showInfo = {
+  wvl: {
+    intro: `Acht Nederlanders die hun droom hebben nagejaagd en in een winters buitenland wonen, openen hun huis én hun hart. Singles kunnen zich aanmelden en komen op bezoek — wie weet vonkt het. Seizoen 3 loopt van <strong>5 januari t/m ~5 maart 2026</strong>, drie afleveringen per week (di/wo/do) op RTL4. Op Videoland een week vooruit te kijken.`,
+    cast: [
+      { name:"Claudia (53)", loc:"🇦🇹 Wendling bei Haag, Oostenrijk", desc:"Verbouwt haar ouderlijk huis tot B&B. Zoekt een levenslustige man met diepgang." },
+      { name:"Hans (73)", loc:"🇳🇴 Ås, Noorwegen", desc:"Woont al 50+ jaar in Noorwegen. Energiek, klust graag. Zoekt een nuchtere Hollandse dame." },
+      { name:"Robin (60)", loc:"🇸🇪 Unnaryd, Zweden", desc:"Woont in een typisch Zweeds houten huisje. Zoekt een vrouw met veel knuffelzin." },
+      { name:"Elsje (49)", loc:"🇸🇪 Hammarstrand, Zweden", desc:"Bekende van seizoen 1. Nu zelf gastheer. Zoekt een sportieve, avontuurlijke man." },
+      { name:"Hanneke (34)", loc:"🇦🇹 Saalbach, Oostenrijk", desc:"Marketeer en wintersportorganisator. Skiet het liefst elke dag. Zoekt een man met lef." },
+      { name:"Monique (61)", loc:"🇨🇭 Arzier, Zwitserland", desc:"Bezig met opstarten B&B, werkt ook als projectmanager. Reist veel naar Azië en Afrika." },
+      { name:"André (28)", loc:"🇦🇩 Andorra", desc:"Chef-kok in het familiehotel. Jongste deelnemer. Zoekt een spontane jonge vrouw." },
+      { name:"Klaas (53)", loc:"🇦🇹 Weissenbach am Lech, Oostenrijk", desc:"Vader van drie, timmerman en berggids. Zoekt een warme, sportieve vrouw." },
+    ],
+    xtweets: [
+      { user:"@montflor", text:"Monique geeft graag 'complimentjes' weg onder het mom van plagerijtjes… Ach ja, je kunt het maar beter even gezegd hebben… 😬🙄 #wintervolliefde", date:"21 jan 2026" },
+      { user:"@Letsbekind44", text:"Mag ik zeggen dat ik 'Zwitserse' Monique een ongeïnteresseerde en weinig sympathieke vrouw vindt? Ja, dat mag ik! #wintervolliefde", date:"13 jan 2026" },
+      { user:"@ailofglitters", text:"Monique is net zo'n gezellig en warm persoon als het interieur van haar huis 😂 #wintervolliefdevooruit", date:"20 jan 2026" },
+      { user:"@ArjanHarmeling", text:"Monique heeft niet mijn gunfactor #wintervolliefde", date:"22 jan 2026" },
+      { user:"@WvLkijker_NL", text:"Hans sereneert Claudia met Edelweiss op een feestje en het hele gezelschap staat erbij verstijfd. Ik KAN er niet tegen 😭😂 #wintervolliefde", date:"28 jan 2026" },
+      { user:"@realityNL", text:"Hans serveert een lamskop (24 uur geweekt) aan zijn date en noemt het 'typisch Noors'. Het tongetje is lekker zacht, zegt hij. Ik ben ziek #wintervolliefde", date:"3 feb 2026" },
+      { user:"@tvkijker_noor", text:"Gilbert gooit z'n voeten op de tafel bij Elsje alsof hij thuis is. Jongen... doe even normaal! 😂 #wintervolliefde", date:"5 feb 2026" },
+      { user:"@sofietv", text:"Claudia likt haar vingers af bij de komst van Viktor. Rugzak! Gespierde armen! Spirituele kant! Die vrouw gaat compleet door het lint 😍 #wintervolliefde", date:"17 feb 2026" },
+    ]
+  },
+  emjf: {
+    intro: `De famille-editie van Echte Meisjes in de Jungle start op <strong>23 februari 2026</strong> op Videoland. Bekende Nederlandse realitysterren trekken samen met een familielid de jungle van Thailand in. Wie kronen zich tot Queen of the Jungle? Gepresenteerd door Valerio Zeno.`,
+    cast: [
+      { name:"Amy Rose & moeder Jacqueline", loc:"🌴 Thailand", desc:"Amy Rose bekend van Winter vol Liefde seizoen 1." },
+      { name:"I Am Aisha & moeder Jetty", loc:"🌴 Thailand", desc:"Aisha is hiphopartiest, moeder Jetty was zangeres bij de legendarische Mai Tai." },
+      { name:"Louisa & moeder Hannie", loc:"🌴 Thailand", desc:"Louisa is een bekende van eerdere seizoenen. Kan ze het dit keer rustig houden?" },
+      { name:"Demi & nicht Femke", loc:"🌴 Thailand", desc:"Demi bekend van Ex on the Beach als de 'PK Koning'." },
+      { name:"Sharon & Esmee Ipema", loc:"🌴 Thailand", desc:"Tweelingzussen, allebei bekend van Ex on the Beach en eerdere jungle-edities." },
+      { name:"Fleur & nichtje Yara", loc:"🌴 Thailand", desc:"Fleur bekend van Proppers in Albu." },
+      { name:"Rosanne & Mylène", loc:"🌴 Thailand", desc:"Junior Songfestival-tweeling." },
+    ],
+    xtweets: []
+  }
+};
+
+function getShowInfo(key) {
+  const info = showInfo[key];
+  if (!info) return '';
+  const castHtml = info.cast.map(c => `
+    <div class="cast-card">
+      <div class="cast-name">${c.name}</div>
+      <div class="cast-loc">${c.loc}</div>
+      <div class="cast-desc">${c.desc}</div>
+    </div>`).join('');
+  return `
+    <div class="show-info-block">
+      <div class="show-info-intro">${info.intro}</div>
+      <div class="cast-grid">${castHtml}</div>
+    </div>`;
+}
+
+function renderSocialsTab(key) {
+  const info = showInfo[key];
+  if (!info || !info.xtweets.length) {
+    return `<div class="empty-tab"><div class="big">𝕏</div><p>Nog geen X-reacties beschikbaar voor deze show.<br>Zodra de show is begonnen vullen we dit aan!</p></div>`;
+  }
+  return `
+    <div style="padding:0.5rem 0 1rem;">
+      <p style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem;">Publieke reacties van X (Twitter) over dit seizoen. Bron: echte tweets.</p>
+      <div style="display:flex;flex-direction:column;gap:0.75rem;">
+        ${info.xtweets.map(t => `
+          <div class="x-tweet">
+            <div class="x-tweet-header">
+              <span class="x-handle">${t.user}</span>
+              <span class="x-date">${t.date}</span>
+            </div>
+            <div class="x-text">${t.text}</div>
+          </div>`).join('')}
+      </div>
+      <p style="font-size:0.72rem;color:var(--muted);margin-top:1.25rem;">Reacties zijn publieke posts van X met #wintervolliefde. Gebruikersnamen zijn zoals gepost.</p>
+    </div>`;
+}
+const testCases = [
+  { label: "😍 Uiterlijk positief", text: "Thomas zag er echt hot uit vanavond!", expect: "warn" },
+  { label: "🤮 Uiterlijk negatief (straattaal)", text: "Thomas zag er hot uit!! Anouk was teringlelijk", expect: "block" },
+  { label: "😤 Lichte neerbuigendheid", text: "Anouk is echt zo'n dramaqueen, ik kan er niet meer tegen", expect: "warn" },
+  { label: "🤬 Duidelijk schelden", text: "Sander is gewoon een complete eikel, ik haat hem", expect: "block" },
+  { label: "✅ Kritiek op gedrag", text: "Ik vond het jammer dat Thomas zo onduidelijk was tegenover Anouk. Kies gewoon!", expect: "ok" },
+  { label: "✅ Positief over persoonlijkheid", text: "Lieke is zo authentiek, ik hoop dat ze wint dit seizoen", expect: "ok" },
+  { label: "✅ Strategie-kritiek", text: "Sander had eerder zijn kaarten op tafel moeten leggen", expect: "ok" },
+  { label: "😬 Body shaming subtiel", text: "Roos past niet echt bij Thomas, ze ziet er ook niet zo verzorgd uit", expect: "block" },
+];
+
+let testResults = {};
+let testRunning = false;
+
+function openTestPanel() {
+  document.getElementById('testPanelOverlay').classList.add('open');
+  renderTestPanel();
+}
+function closeTestPanel() {
+  document.getElementById('testPanelOverlay').classList.remove('open');
+}
+
+function renderTestPanel() {
+  const container = document.getElementById('testCases');
+  container.innerHTML = testCases.map((tc, i) => {
+    const r = testResults[i];
+    const statusColor = r ? (r.verdict==='block'?'#c8462b':r.verdict==='warn'?'#e8a045':'#4caf7d') : '#ccc';
+    const icon = r ? (r.verdict==='block'?'🚫':r.verdict==='warn'?'⚠️':'✅') : '⏳';
+    const matchIcon = r ? (r.verdict===tc.expect ? '🎯' : '❌') : '';
+    return `<div class="test-case ${r?'done':''}" id="tc-${i}">
+      <div class="test-case-top">
+        <span class="test-label">${tc.label}</span>
+        <span class="test-expect">verwacht: <strong>${tc.expect}</strong> ${matchIcon}</span>
+      </div>
+      <div class="test-text">"${tc.text}"</div>
+      ${r ? `<div class="test-result" style="border-left:3px solid ${statusColor}">
+        <strong>${icon} ${r.verdict.toUpperCase()}</strong> — ${r.message}
+        ${r.rewrite ? `<div class="test-rewrite">✏️ "${r.rewrite}"</div>` : ''}
+      </div>` : `<div class="test-pending">Nog niet getest</div>`}
+    </div>`;
+  }).join('');
+}
+
+async function runAllTests() {
+  if (testRunning) return;
+  testRunning = true;
+  testResults = {};
+  const btn = document.getElementById('runTestsBtn');
+  btn.textContent = 'Bezig...';
+  btn.disabled = true;
+  
+  for (let i = 0; i < testCases.length; i++) {
+    document.getElementById(`tc-${i}`).innerHTML = `
+      <div class="test-case-top"><span class="test-label">${testCases[i].label}</span></div>
+      <div class="test-text">"${testCases[i].text}"</div>
+      <div class="test-pending"><span class="spinner" style="display:inline-block"></span> Checken...</div>`;
+    
+    try {
+      const result = await checkWithAI(testCases[i].text);
+      testResults[i] = result;
+    } catch {
+      testResults[i] = { verdict: 'error', message: 'API fout' };
+    }
+    renderTestPanel();
+    await new Promise(r => setTimeout(r, 300));
+  }
+  
+  testRunning = false;
+  btn.textContent = 'Alle tests opnieuw uitvoeren';
+  btn.disabled = false;
+
+  // Score
+  const correct = Object.entries(testResults).filter(([i, r]) => r.verdict === testCases[i].expect).length;
+  document.getElementById('testScore').textContent = `Score: ${correct}/${testCases.length} correct`;
+  document.getElementById('testScore').style.display = 'block';
+}
+
+async function runSingleTest(i) {
+  testResults[i] = null;
+  renderTestPanel();
+  try {
+    testResults[i] = await checkWithAI(testCases[i].text);
+  } catch {
+    testResults[i] = { verdict:'error', message:'API fout' };
+  }
+  renderTestPanel();
+}
+
+// ===== MOMENT CLIPS =====
+function addMoment(epId) {
+  if (!currentUser) {
+    document.getElementById('loginOverlay').style.display = 'flex';
+    return;
+  }
+  const ts = prompt('Tijdstempel (bijv. 14:32):');
+  if (!ts) return;
+  const label = prompt('Korte omschrijving van dit moment:');
+  if (!label) return;
+  // Find episode and add moment
+  Object.values(shows).forEach(show => {
+    show.seasons.forEach(s => s.episodes.forEach(e => {
+      if (e.id === epId) {
+        if (!e.moments) e.moments = [];
+        e.moments.push({ t: ts, label });
+      }
+    }));
+  });
+  renderMain();
+}
+
+// ===== FLAIR =====
+const flairOptions = {
+  wvl: ['Team Hans ❄️','Team Claudia 🇦🇹','Team Robin 🌲','Team André 👨‍🍳','Team Monique 💼','Team Hanneke ⛷️','Team Elsje 🌸','Team Klaas 🪵'],
+  emjf: ['Team Amy Rose 🌺','Team Aisha 💃','Team Louisa 🌿','Team Sharon & Esmee👯','Jungle-veteraan 🌴'],
+  zomergasten: ['Vaste kijker 🌿','VPRO-fan 📺'],
+  onze_oceanen: ['Oceaanliefhebber 🌊','Team Natuur 🐠'],
+  general: ['Sinds seizoen 1 📺','Reality-expert 🎬','Documentaire-fan 🎥','Nieuwkomer 👋']
+};
+
+function openFlairPicker() {
+  if (!currentUser) { document.getElementById('loginOverlay').style.display='flex'; return; }
+  const existing = document.getElementById('flairPickerEl');
+  if (existing) { existing.remove(); return; }
+  const opts = [...(flairOptions[currentShow] || []), ...flairOptions.general];
+  const picker = document.createElement('div');
+  picker.id = 'flairPickerEl';
+  picker.className = 'flair-picker';
+  picker.innerHTML = `<div style="width:100%;font-size:0.72rem;color:var(--muted);margin-bottom:0.25rem;">Kies jouw flair voor dit platform:</div>` +
+    opts.map(f => `<div class="flair-option" onclick="setFlair('${f}')">${f}</div>`).join('') +
+    `<div class="flair-option" style="color:#c04050;" onclick="setFlair(null)">✕ Verwijderen</div>`;
+  // Insert after post input area
+  const postArea = document.querySelector('.post-input-area');
+  if (postArea) postArea.after(picker);
+}
+
+function setFlair(f) {
+  userFlair = f;
+  document.getElementById('flairPickerEl')?.remove();
+  renderUserHeader();
+  renderCommentList();
+}
+
+// ===== IK KIJK MEE =====
+function toggleWatching(epId) {
+  if (!currentUser) { document.getElementById('loginOverlay').style.display='flex'; return; }
+  if (watchingEpisodes.has(epId)) {
+    watchingEpisodes.delete(epId);
+  } else {
+    watchingEpisodes.add(epId);
+    karma += 1;
+    renderUserHeader();
+  }
+  renderMain();
+}
+
+// ===== NOTIFICATIES =====
+function addNotification(text, who, epId) {
+  notifCounter++;
+  notifications.unshift({ id: notifCounter, text, who, epId, time: 'zojuist', unread: true });
+  renderNotifBell();
+  renderNotifList();
+}
+
+function renderNotifBell() {
+  const dot = document.getElementById('notifDot');
+  if (dot) dot.className = 'notif-dot' + (notifications.some(n => n.unread) ? ' visible' : '');
+}
+
+function renderNotifList() {
+  const el = document.getElementById('notifList');
+  if (!el) return;
+  if (!notifications.length) {
+    el.innerHTML = '<div class="notif-empty">Nog geen notificaties.<br>Reageer op een aflevering om ze te ontvangen.</div>';
+    return;
+  }
+  el.innerHTML = notifications.map(n => `
+    <div class="notif-item ${n.unread?'unread':''}" onclick="goToNotif(${n.id})">
+      <span class="notif-who">${n.who}</span> ${n.text}
+      <div class="notif-time">${n.time}</div>
+    </div>`).join('');
+}
+
+function toggleNotifPanel() {
+  const panel = document.getElementById('notifPanel');
+  panel.classList.toggle('open');
+}
+
+function markAllRead() {
+  notifications.forEach(n => n.unread = false);
+  renderNotifBell();
+  renderNotifList();
+}
+
+function goToNotif(id) {
+  const n = notifications.find(n => n.id === id);
+  if (n) { n.unread = false; }
+  document.getElementById('notifPanel').classList.remove('open');
+  renderNotifBell();
+}
+
+// Close notif panel when clicking outside
+document.addEventListener('click', e => {
+  const panel = document.getElementById('notifPanel');
+  const bell = document.getElementById('notifBell');
+  if (panel && bell && !panel.contains(e.target) && !bell.contains(e.target)) {
+    panel.classList.remove('open');
+  }
+});
+
+// ===== LOGIN =====
+function loginWith(provider) {
+  // Simulate OAuth - in real app this calls Apple/Google
+  const names = { apple: 'AppleUser_' + Math.floor(Math.random()*1000), google: 'GoogleUser_' + Math.floor(Math.random()*1000) };
+  finishLogin(names[provider]);
+}
+function loginWithUsername() {
+  const val = document.getElementById('loginUsername').value.trim();
+  if (!val || val.length < 2) {
+    document.getElementById('loginUsername').style.borderColor = '#e05b3a';
+    return;
+  }
+  finishLogin(val);
+}
+function skipLogin() {
+  document.getElementById('loginOverlay').style.display = 'none';
+}
+function finishLogin(name) {
+  currentUser = name;
+  document.getElementById('loginOverlay').style.display = 'none';
+  // Simulate a waiting notification + welcome
+  setTimeout(() => {
+    addNotification('reageerde op een populaire reactie in Winter vol Liefde S03E05 — bekijk het!', 'realityjunkie', 'S03E05');
+  }, 2500);
+  renderUserHeader();
+  renderMain(); // refresh post area now that user is logged in
+}
+
+// ===== TRENDING FEED =====
+function renderTrendingFeed() {
+  const trending = [
+    { show: '❄️ Winter vol Liefde S3', ep: 'Aflevering 12', activity: 47, hot: true, showKey:'wvl' },
+    { show: '❄️ Winter vol Liefde S3', ep: 'De lamskop-avond (afl. 5)', activity: 31, hot: true, showKey:'wvl' },
+    { show: '🌴 Echte Meisjes in de Jungle', ep: 'Aflevering 1 — Eerste uren', activity: 28, hot: true, showKey:'emjf' },
+    { show: '🌿 Zomergasten', ep: 'Famke Louise', activity: 22, hot: false, showKey:'zomergasten' },
+    { show: '🌊 Onze Oceanen', ep: 'De levende zee', activity: 15, hot: false, showKey:'onze_oceanen' },
+  ];
+  const el = document.getElementById('trendingFeed');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="trending-section">
+      <div class="trending-header">🔥 Meest besproken</div>
+      ${trending.map((t, i) => `
+        <div class="trending-item" onclick="selectShow('${t.showKey}')">
+          <div class="trending-rank ${t.hot ? 'hot' : ''}">${i+1}</div>
+          <div class="trending-meta">
+            <div class="trending-show">${t.show}</div>
+            <div class="trending-ep">${t.ep}</div>
+            <div class="trending-activity"><span class="trending-dot"></span>${t.activity} reacties vandaag</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ===== INIT =====
+document.getElementById('loginOverlay').style.display = 'flex';
+renderSidebar();
+renderMain();
+renderUserHeader();
+renderTrendingFeed();
+</script>
+<!-- Test Panel Modal -->
+<div class="overlay" id="testPanelOverlay">
+  <div class="modal" style="max-width:680px;max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;">
+      <div>
+        <h2 style="margin-bottom:0.25rem;">🧪 Moderatie testpaneel</h2>
+        <p style="font-size:0.8rem;color:var(--muted);margin:0;">Test de AI-moderatie met realistische cases. 🎯 = correct voorspeld, ❌ = mis.</p>
+      </div>
+      <button onclick="closeTestPanel()" style="background:var(--warm);border:none;border-radius:8px;padding:0.4rem 0.75rem;cursor:pointer;font-size:0.85rem;">✕</button>
+    </div>
+    <div id="testScore" style="display:none;background:#eefaf4;border:1px solid #80d4a8;border-radius:8px;padding:0.6rem 1rem;font-weight:600;color:#1a5c3a;margin-bottom:1rem;font-size:0.9rem;"></div>
+    <div id="testCases" style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1.25rem;"></div>
+    <button id="runTestsBtn" onclick="runAllTests()" style="width:100%;background:var(--ink);color:white;border:none;border-radius:10px;padding:0.75rem;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:500;cursor:pointer;">▶ Alle 8 tests uitvoeren</button>
+  </div>
+</div>
+
+</body>
+</html>
